@@ -122,43 +122,43 @@ def dummy_clean_json(text):
     new_text = text.replace("```%json", "").replace("```json", "").replace("```", "")
     return new_text
 
+def write(outputFile, dirGlob):
+    files = glob.glob(dirGlob)
 
-# files = glob.glob("./ml/data/oregon_dockets_chunks_insights/*.json")
+    valid_documents = []
 
-# valid_documents = []
+    for file in files:
+        data = json.load(open(file))
+        has_crapped = False
+        has_value = False
+        try:
+            insight = json.loads(dummy_clean_json(data["insights"]))
+            for key, value in insight.items():
+                if value:
+                    has_value = True
+                    break
+        except:
+            has_crapped = True
+            insight = data["insights"]
+            # has_value = True
 
-# for file in files:
-#     data = json.load(open(file))
-#     has_crapped = False
-#     has_value = False
-#     try:
-#         insight = json.loads(dummy_clean_json(data["insights"]))
-#         for key, value in insight.items():
-#             if value:
-#                 has_value = True
-#                 break
-#     except:
-#         has_crapped = True
-#         insight = data["insights"]
-#         # has_value = True
-
-#     if has_value:  # and data["municipality"] != "OregonDOE":
-#         data["chunk_url"] = add_timestamp_to_url(data["source"], data["start"])
-#         valid_documents.append(data)
-#         st.write(file)
-#         st.write(data["meeting_id"])
-#         st.write(data["index"])
-#         st.write(data["municipality"])
-#         st.write(data["date"])
-#         st.write(data["title"])
-#         st.write(add_timestamp_to_url(data["source"], data["start"]))
-#         st.write(has_crapped)
-#         st.write(insight)
-#         st.write(data["text"])
-#         st.write("---")
+        if has_value:  # and data["municipality"] != "OregonDOE":
+            data["chunk_url"] = add_timestamp_to_url(data["source"], data["start"])
+            valid_documents.append(data)
+            st.write(file)
+            st.write(data["meeting_id"])
+            st.write(data["index"])
+            st.write(data["municipality"])
+            st.write(data["date"])
+            st.write(data["title"])
+            st.write(add_timestamp_to_url(data["source"], data["start"]))
+            st.write(has_crapped)
+            st.write(insight)
+            st.write(data["text"])
+            st.write("---")
 
 
-# json.dump(valid_documents, open("./oregon_dockets_results.json", "w"), indent=4)
+    json.dump(valid_documents, open(outputFile, "w"), indent=4)
 
 # # st.write(len(valid_documents))
 
@@ -190,31 +190,35 @@ def dummy_clean_json(text):
 
 
 
+def show(file):
+    with open(file, "r") as f:
+        valid_documents = json.load(f)
+
+    counter = 0
+    for data in valid_documents:
+        if "2022" in data["date"]:
+            counter += 1
+            continue
+        # if data["municipality"] == "OregonDOE":
+        #     continue
+        # st.write(data["chunk_url"])
+        st.write(data["meeting_id"])
+        st.write(data["index"])
+        st.write(data["municipality"])
+        st.write(data["date"])
+        st.write(data["title"])
+        st.write(add_timestamp_to_url(data["source"], data["start"]))
+        try:
+            st.write(json.loads(dummy_clean_json(data["insights"])))
+        except:
+            st.write(data["insights"])
+        st.write(data["text"])
+        st.write("---")
+
+    print(counter)
 
 file = "./oregon_dockets_results.json"
+dir = './ml/data/oregon_dockets_chunks_insights/*.json'
 
-with open(file, "r") as f:
-    valid_documents = json.load(f)
-
-counter = 0
-for data in valid_documents:
-    if "2022" in data["date"]:
-        counter += 1
-        continue
-    # if data["municipality"] == "OregonDOE":
-    #     continue
-    # st.write(data["chunk_url"])
-    st.write(data["meeting_id"])
-    st.write(data["index"])
-    st.write(data["municipality"])
-    st.write(data["date"])
-    st.write(data["title"])
-    st.write(add_timestamp_to_url(data["source"], data["start"]))
-    try:
-        st.write(json.loads(dummy_clean_json(data["insights"])))
-    except:
-        st.write(data["insights"])
-    st.write(data["text"])
-    st.write("---")
-
-print(counter)
+# write(file, dir)
+show(file)
